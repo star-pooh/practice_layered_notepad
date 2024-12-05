@@ -7,6 +7,7 @@ import org.example.practice_layered_notepad.entity.Notepad;
 import org.example.practice_layered_notepad.repository.NotepadRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -25,10 +26,7 @@ public class NotepadServiceImpl implements NotepadService {
   @Override
   public NotepadResponseDto saveNotepad(NotepadRequestDto dto) {
     Notepad notepad = new Notepad(dto.getTitle(), dto.getContents());
-
-    Notepad savedNotepad = notepadRepository.saveNotepad(notepad);
-
-    return new NotepadResponseDto(savedNotepad);
+    return notepadRepository.saveNotepad(notepad);
   }
 
   @Override
@@ -38,58 +36,51 @@ public class NotepadServiceImpl implements NotepadService {
 
   @Override
   public NotepadResponseDto findByNotepadId(Long id) {
-    Notepad notepad = notepadRepository.findByNotepadId(id);
-
-    if (notepad == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
-    }
-
+    Notepad notepad = notepadRepository.findNotepadByIdOrElseThrow(id);
     return new NotepadResponseDto(notepad);
   }
 
+  @Transactional
   @Override
   public NotepadResponseDto updateNotepad(Long id, String title, String contents) {
-    Notepad notepad = notepadRepository.findByNotepadId(id);
-
-    if (notepad == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
-    }
-
     if (title == null || contents == null) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "The title and content are required values.");
     }
 
-    notepad.update(title, contents);
+    int updatedRow = notepadRepository.updateNotepad(id, title, contents);
 
-    return new NotepadResponseDto(notepad);
-  }
-
-  @Override
-  public NotepadResponseDto updateTitle(Long id, String title, String contents) {
-    Notepad notepad = notepadRepository.findByNotepadId(id);
-
-    if (notepad == null) {
+    if (updatedRow == 0) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
     }
 
+    Notepad notepad = notepadRepository.findNotepadByIdOrElseThrow(id);
+    return new NotepadResponseDto(notepad);
+  }
+
+  @Transactional
+  @Override
+  public NotepadResponseDto updateTitle(Long id, String title, String contents) {
     if (title == null || contents != null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title are required values.");
     }
 
-    notepad.updateTitle(title);
+    int updatedRow = notepadRepository.updateTitle(id, title);
 
+    if (updatedRow == 0) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
+    }
+
+    Notepad notepad = notepadRepository.findNotepadByIdOrElseThrow(id);
     return new NotepadResponseDto(notepad);
   }
 
   @Override
   public void deleteNotepad(Long id) {
-    Notepad notepad = notepadRepository.findByNotepadId(id);
+    int deletedRow = notepadRepository.deleteNotepad(id);
 
-    if (notepad == null) {
+    if (deletedRow == 0) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
     }
-
-    notepadRepository.deleteNotepad(id);
   }
 }

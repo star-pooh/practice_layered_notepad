@@ -26,7 +26,7 @@ public class NotepadController {
   /**
    * 생성자 주입 클래스가 필요로 하는 의존성을 생성자를 통해 전달하는 방식
    *
-   * @param notepadService @Service로 등록된 MemoService 구현체인 Impl
+   * @param notepadService @Service로 등록된 NotepadService 구현체인 Impl
    */
   public NotepadController(NotepadService notepadService) {
     this.notepadService = notepadService;

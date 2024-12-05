@@ -2,13 +2,12 @@ package org.example.practice_layered_notepad.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
 public class Notepad {
 
-  @Setter private Long id;
+  private Long id;
   private String title;
   private String contents;
 
